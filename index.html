@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>사고와표현</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js"></script>
+    <style>
+        #main {
+            position: relative;
+            padding: 10px;
+            margin: auto;
+            border: 1px solid black;
+            width: 50%;
+            height: 500px;
+        }
+        #question {
+            margin: 20px;
+            font-size: 40px;
+            word-wrap:break-word;
+        }
+        #answer {
+            text-align: center;
+            font-size: 20px;
+            position: absolute;
+            left: 0;
+            bottom: 60px;
+            background-color: #eeeeee;
+            height: 150px;
+            width: 100%;
+            padding: 0;
+            border: 0;
+        }
+        #check {
+            position: absolute;
+            left: 0;
+            bottom: 10px;
+            border: none;
+            background-color: #0151ff;
+            width: 100%;
+            height: 40px;
+            color: white;
+        }
+        canvas {
+            margin: auto;
+            width: 200px;
+        }
+        #smile {
+            margin: auto;
+            width: 100px;
+        }
+    </style>
+</head>
+<body>
+    <div id="main">
+        <p id="question"></p>
+        <input id="answer" type="text"><br>
+        <canvas id="myChart"></canvas>
+        <p id="countdown"></p>
+        <img src="" id="smile">
+        <button id="check" type="button">확인</button>
+    </div>
+    <script>
+        const question = [
+        "나이를 입력해주세요",
+        "하루의 수면 시간을 입력해주세요\n(단위: 시간)",
+        "식사에 걸리는 시간을 입력해주세요\n(단위: 분)",
+        "취업 예상 나이를 입력해주세요"
+        ];
+        const recommand = [
+        "쓸데없는 걱정은 고문이자 당신의 마음을 상하게 하고 스트레스에 시달리게 하며, 삶의 소중한 순간들을 허비하게 만드는 지옥과 같다",
+        "이미 일어난 일은 되돌릴 수 없다",
+        "내일 일을 위하여 염려하지 말라. 반드시 내일을 생각하라. 아니 그뿐 아니라 신중하게 생각하고 계획하고 준비하라. 그러나 걱정하지는 마라",
+        "발생할 수 있는 최악의 경우를 생각하고, 필요하면 그것을 감수하기로 마음먹자 대단히 중요한 일이 발생했습니다. 그것은 바로 제가 그 당시 경험하지 못했던 평온함이었습니다"
+        ];
+        let answer = [];
+        let count = 0;
+        const MAX_AGE = 83.5;
+        const HOUR = 60;
+        let entire_time = 0;
+        let remain_days = 0;
+        let remain_time = 0;
+        let sleep_time = 0;
+        let food_time = 0;
+        let work_time = 0;
+        let used_time = 0;
+
+        document.getElementById("question").innerText = question[count];
+        document.getElementById("check").addEventListener('click', check);
+        document.getElementById("myChart").style.display = "none";
+        document.getElementById("smile").style.display = "none";
+        function check() {
+            if(count < question.length) {
+                answer[count] = document.getElementById("answer").value;
+                count++;
+                if(count < question.length){
+                    document.getElementById("question").innerText = question[count];
+                }
+            } else if(count == question.length){
+                document.getElementById("myChart").style.display = "block";
+                entire_time = MAX_AGE * 12 * 30 * 24;
+                remain_days = (MAX_AGE - parseInt(answer[0])) * 12 * 30;
+                sleep_time = remain_days * parseInt(answer[1]);
+                food_time = remain_days * (parseInt(answer[2] / 60));
+                work_time = (50 - parseInt(answer[3])) * 12 * 30 * 8;
+                remain_time = (MAX_AGE - parseInt(answer[0])) * 12 * 30 * 24 - sleep_time - food_time - work_time;
+                used_time = (parseInt(answer[0]) * 12 * 30 * 24) + sleep_time + food_time + work_time;
+                document.getElementById("answer").style.display = "none";
+                document.getElementById("question").innerText = "당신에게 남은 여유 시간은 " + (remain_time/entire_time * 100).toFixed(0) + "%입니다";
+                document.getElementById("check").innerText = "다음";
+
+                var context = document
+                .getElementById('myChart')
+                .getContext('2d');
+                var myChart = new Chart(context, {
+                    type: 'pie', // 차트의 형태
+                    data: { // 차트에 들어갈 데이터
+                        labels: [
+                            //x 축
+                            '필수 시간','여유 시간'
+                        ],
+                        datasets: [
+                            { //데이터
+                                label: 'test1', //차트 제목
+                                fill: false, // line 형태일 때, 선 안쪽을 채우는지 안채우는지
+                                data: [
+                                    used_time,remain_time //x축 label에 대응되는 데이터 값
+                                ],
+                                backgroundColor: [
+                                    //색상
+                                    'rgba(255, 99, 132, 0.2)',
+                                    'rgba(54, 162, 235, 0.2)'
+                                ],
+                                borderColor: [
+                                    //경계선 색상
+                                    'rgba(255, 99, 132, 1)',
+                                    'rgba(54, 162, 235, 1)'
+                                ],
+                                borderWidth: 1 //경계선 굵기
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: false,
+                        scales: {
+                            yAxes: [
+                                {
+                                    ticks: {
+                                        beginAtZero: true
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                });
+                count++;
+            } else if(count == question.length + 1) {
+                document.getElementById("myChart").style.display = "none";
+                document.getElementById("question").innerText = "당신은 남은 시간을 어떻게 보내실건가요?";
+                count++;
+            }  else if(count == question.length + 2) {
+                document.getElementById("question").innerText = "저는 남은 시간을 걱정없이 행복하게 보내고 싶습니다";
+                count++;
+            }  else if(count == question.length + 3) {
+                document.getElementById("question").innerText = "여러분들에게 생각할 만한 문장을 추천드리겠습니다";
+                count++;
+            }   else if(count == question.length + 4) {
+                document.getElementById("question").style.fontSize = "20px";
+                document.getElementById("question").innerText = "\"" + recommand[0] + "\"";
+                document.getElementById("smile").style.display = "block";
+                document.getElementById("smile").src = "http://image.yes24.com/goods/79297023/XL";
+                count++;
+            }    else if(count == question.length + 5) {
+                document.getElementById("question").innerText = "\"" + recommand[1] + "\"";
+                count++;
+            }    else if(count == question.length + 6) {
+                document.getElementById("question").innerText = "\"" + recommand[2] + "\"";
+                count++;
+            }    else if(count == question.length + 7) {
+                document.getElementById("question").innerText = "\"" + recommand[3] + "\"";
+                count++;
+            }    else if(count == question.length + 8) {
+                document.getElementById("question").innerText = "남은 시간 행복하게 보내시길 바랍니다"
+                document.getElementById("question").style.fontSize = "40px";
+                document.getElementById("smile").src = "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Noto_Emoji_KitKat_263a.svg/220px-Noto_Emoji_KitKat_263a.svg.png";
+                document.getElementById("check").style.display = "none";
+            }
+        }
+    </script>
+</body>
+</html>
